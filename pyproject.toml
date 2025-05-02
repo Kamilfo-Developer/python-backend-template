@@ -1,0 +1,80 @@
+[project]
+name = "python-backend-template"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiochclient>=2.6.0",
+    "aiohttp>=3.11.18",
+    "cbor2>=5.6.5",
+    "dishka>=1.5.3",
+    "litestar>=2.15.2",
+    "pydantic>=2.11.4",
+    "pydantic-settings>=2.9.1",
+    "redis>=6.0.0",
+    "sentry-sdk>=2.27.0",
+    "sqlalchemy>=2.0.40",
+]
+
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.isort]
+line_length = 120
+atomic = true
+include_trailing_comma = true
+use_parentheses = true
+profile = "black"
+lines_before_imports = 1
+lines_after_imports = 2
+combine_as_imports = true
+multi_line_output = 3
+
+[tool.ruff]
+target-version = "py312"
+# Disable fix for unused imports (`F401`).
+lint.unfixable = ["F401"]
+
+select = ["ALL"]
+line-length = 120
+ignore = [
+    "TRY003",
+    "EM101",
+    "D107",
+    "FBT001",
+    "A002",
+    "D204",
+    "D202",
+    "TC001",
+    "INP001",
+    "D401",
+    "N811",
+    "RUF012",
+    "B904",
+    "G004",
+    "PLR0913",
+    "ANN401",
+    "TRY004",
+    "S101",
+    "PLR2004",
+    "FBT002",
+    "FBT003",
+    "PT011",
+    "B024",
+    "EXE002",
+    "TC003",
+    "I001",
+    "TRY401",
+    "RUF001",
+    "BLE001",
+]
+
+
+[tool.setuptools]
+py-modules = []
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

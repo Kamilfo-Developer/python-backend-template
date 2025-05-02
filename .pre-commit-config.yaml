@@ -1,0 +1,36 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-vcs-permalinks
+      - id: check-yaml
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+
+  - repo: local
+    hooks:
+      - id: uv-lock-check
+        name: Check lock file with uv
+        entry: uv lock --check
+        language: system
+        pass_filenames: false
+        files: pyproject.toml$
+
+      - id: make-format
+        name: make format
+        entry: uv run make format
+        language: system
+        pass_filenames: false
+        files: ^.*\.py$
+
+      - id: make-lint
+        name: make lint
+        entry: uv run make lint
+        language: system
+        pass_filenames: false
+        files: ^.*\.py$
