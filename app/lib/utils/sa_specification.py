@@ -2,8 +2,8 @@
 
 from typing import Any, TypeVar
 
-from sqlalchemy import Select
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import Select, not_, or_
+from sqlalchemy.orm import DeclarativeBase, InstrumentedAttribute
 
 from app.lib.enums.filter import OrderByType
 from app.lib.utils.rattrs import rgetattr
@@ -19,8 +19,11 @@ from app.lib.utils.specification import (
     LikeSpecification,
     NotEqualsSpecification,
     NotInListSpecification,
+    NotSubListSpecification,
     OrderBySpecification,
+    SubListSpecification,
 )
+
 
 _SelectType = TypeVar("_SelectType", bound=Any)
 
@@ -43,7 +46,7 @@ def add_specifications_to_query(  # noqa: C901 PLR0912
 
     """
     for specification in specifications:
-        table_column_obj = rgetattr(table, specification.field)
+        table_column_obj: InstrumentedAttribute = rgetattr(table, specification.field)
 
         match specification:
             case EqualsSpecification():
@@ -54,6 +57,10 @@ def add_specifications_to_query(  # noqa: C901 PLR0912
                 query = query.where(table_column_obj.in_(specification.value))
             case NotInListSpecification():
                 query = query.where(table_column_obj.not_in(specification.value))
+            case SubListSpecification():
+                query = query.where(or_(*[table_column_obj == value for value in specification.value]))
+            case NotSubListSpecification():
+                query = query.where(not_(or_(*[table_column_obj == value for value in specification.value])))
             case GreaterThanSpecification():
                 query = query.where(table_column_obj > specification.value)
             case GreaterThanOrEqualsToSpecification():
