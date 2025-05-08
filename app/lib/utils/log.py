@@ -19,7 +19,7 @@ except ImportError:
 def configure_logging() -> None:
     """Configure logging from environment variables."""
     if log_config_path := environ.get("LOG_CONFIG"):
-        with open(log_config_path, "r") as f:
+        with open(log_config_path) as f:
             logging_config = safe_load(f.read())
         logging.config.dictConfig(logging_config)
         return

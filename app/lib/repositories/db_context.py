@@ -1,19 +1,31 @@
-"""Base database context."""
+"""Database context protocol for repository layer.
+
+This module defines the interface for database contexts used throughout the application.
+"""
 
 from abc import abstractmethod
-from typing import Protocol
+from typing import Protocol, TypeVar
 
 
-class DBContext[T](Protocol):
-    """Database context."""
+T_co = TypeVar("T_co", covariant=True)
+
+
+class DBContext(Protocol[T_co]):
+    """Database context protocol.
+
+    Provides an abstraction over different database access methods,
+    allowing repositories to work with any database backend implementation.
+    """
 
     @property
     @abstractmethod
-    def manipulator(self) -> T:
-        """Get database manipulator which can be used for controlling the database.
+    def manipulator(self) -> T_co:
+        """Get database manipulator for interacting with the database.
 
-        For example, it could be an SQLAlchemy async session or an asyncpg connection.
+        The manipulator is the actual database-specific object used to execute
+        operations, such as an SQLAlchemy session, asyncpg connection, etc.
 
         Returns:
-            T: Any generic manipulator.
+            A database-specific manipulator object.
+
         """
