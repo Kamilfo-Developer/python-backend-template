@@ -1,75 +1,57 @@
-"""Module containing main Litestar application."""
+"""Module containing main FastAPI application."""
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Self
 
 from dishka import make_async_container
-from dishka.integrations.litestar import setup_dishka
-from litestar import Litestar
-from litestar.config.cors import CORSConfig
-from litestar.openapi import OpenAPIConfig
-from litestar.openapi.plugins import SwaggerRenderPlugin
-from litestar.openapi.spec import Components, SecurityScheme
-from litestar.plugins.problem_details import ProblemDetailsConfig, ProblemDetailsPlugin
+from dishka.integrations.fastapi import setup_dishka
+from fastapi import FastAPI
 
-from app.core.dependencies.providers import app_provider
-
-from .core.config import AppConfig
-from .lib.exceptions.handler import register_exception_handlers
-from .lib.utils.sentry import configure_sentry
-from .routers import router
-from .routers.middlewares import IdempotentRequestMiddleware, RequestIdMiddleware
-from .version import __version__
+from app.core.config import AppConfig
+from app.dependencies.providers import app_provider
+from app.lib.exceptions.handler import register_exception_handlers
+from app.middlewares.idempotent_request import IdempotentRequestMiddleware
+from app.middlewares.request_id import RequestIdMiddleware
+from app.routers.v1.router import v1_router
 
 
-class LitestarApp:
-    """Litestar application."""
+class App:
+    """FastAPI application wrapper."""
 
-    def __init__(self, config: AppConfig, app: Litestar | None = None) -> None:
-        """Initialize Litestar application.
+    def __init__(self, config: AppConfig, app: FastAPI | None = None) -> None:
+        """Initialize FastAPI application.
 
         Args:
-            config (AppConfig): Application config.
-            app (Litestar, optional): Litestar application. If set to None, a new
-                application will be created. If set to an existing Litestar
-                application, it will be used (but not instance configuration
-                will be applied).
+            config: Application configuration.
+            app: Optional existing FastAPI instance. A new one is created if None.
 
         """
         self.config = config
-        self.litestar_app = app or Litestar(
-            openapi_config=OpenAPIConfig(
-                title="Application",
-                description="Application API.",
-                version=__version__,
-                servers=[],
-                render_plugins=[SwaggerRenderPlugin()],
-                path="/docs",
-                components=Components(security_schemes={"HTTPBearer": SecurityScheme("http", scheme="Bearer")}),
-            ),
-            middleware=[
-                RequestIdMiddleware(),
-                IdempotentRequestMiddleware(),
-            ],
-            cors_config=CORSConfig(
-                allow_origins=self.config.general.origins,
-                allow_credentials=True,
-                allow_methods=["*"],
-                allow_headers=["*"],
-            ),
-            plugins=[
-                ProblemDetailsPlugin(ProblemDetailsConfig(enable_for_all_http_exceptions=True)),
-            ],
-            lifespan=[self.lifespan],
-        )
-        # litestar main router
-        self.litestar_app.register(router)
-        # exception handler
-        register_exception_handlers(self.litestar_app)
-        # DI container
+        self.fastapi_app = app or FastAPI(lifespan=self.lifespan)
+
+        self._setup_routes()
+        self._setup_exception_handlers()
+        self._setup_middleware()
+
+    def _setup_routes(self) -> None:
+        """Setup API routes."""
+        self.fastapi_app.include_router(v1_router)
+
+    def _setup_exception_handlers(self) -> None:
+        """Setup custom exception handlers."""
+        register_exception_handlers(self.fastapi_app)
+
+    def _setup_middleware(self) -> None:
+        """Setup application middleware."""
         dishka_container = make_async_container(app_provider)
-        setup_dishka(dishka_container, self.litestar_app)
+
+        self.fastapi_app.add_middleware(
+            IdempotentRequestMiddleware,
+            dependencies_getter=dishka_container.get,
+        )
+        self.fastapi_app.add_middleware(RequestIdMiddleware)
+        setup_dishka(dishka_container, self.fastapi_app)
 
     @classmethod
     def from_env(cls) -> Self:
@@ -77,19 +59,14 @@ class LitestarApp:
         return cls(AppConfig.from_env())
 
     @asynccontextmanager
-    async def lifespan(self, app: Litestar) -> AsyncGenerator[None, None]:
-        """Lifespan."""
-        configure_sentry(self.config.sentry.url)
-
+    async def lifespan(self, app: FastAPI) -> AsyncGenerator[None, None]:
+        """Application lifespan handler for startup and shutdown events."""
         try:
             yield
         finally:
             await app.state.dishka_container.close()
 
 
-def app() -> Litestar:
-    """Return Litestar application.
-
-    This function is used by Uvicorn to run the application.
-    """
-    return LitestarApp.from_env().litestar_app
+def app() -> FastAPI:
+    """Return FastAPI application instance for Uvicorn server."""
+    return App.from_env().fastapi_app

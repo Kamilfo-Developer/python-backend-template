@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from aiochclient import ChClient
 
 from app.core.config import AppConfig
-from app.core.dependencies.constructors import clickhouse_client
+from app.dependencies.constructors import clickhouse_client
 
 from .ch_versions import ClickhouseMigration
 

@@ -1,5 +1,10 @@
-"""Application V1 router."""
+"""Main v1 API router that aggregates all route modules."""
 
-from litestar import Router
+from fastapi import APIRouter
 
-v1_router = Router("/v1", tags=["v1"], route_handlers=[])
+from app.routers.v1.ping import ping_router
+
+
+v1_router = APIRouter(prefix="/v1")
+
+v1_router.include_router(ping_router)

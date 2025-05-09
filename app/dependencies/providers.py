@@ -5,12 +5,12 @@ from contextlib import asynccontextmanager, contextmanager
 
 from aiochclient import ChClient
 from dishka import Scope, provide
-from dishka.integrations.litestar import LitestarProvider
+from dishka.integrations.fastapi import FastapiProvider
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import AppConfig
-from app.core.dependencies.constructors import (
+from app.dependencies.constructors import (
     clickhouse_client,
     db_engine,
     db_session_autocommit,
@@ -22,7 +22,7 @@ from app.lib.repositories.db_context import DBContext
 from app.lib.repositories.sa_db_context import SADBContext
 
 
-class AppProvider(LitestarProvider):
+class AppProvider(FastapiProvider):
     """All the application dependencies provider."""
 
     # APP CONFIG PROVIDERS.

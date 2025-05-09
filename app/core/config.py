@@ -7,6 +7,7 @@ from typing import Any, Self
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 logger = logging.getLogger(__name__)
 
 
