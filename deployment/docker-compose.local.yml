@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16-alpine
+
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_DB: db
+      POSTGRES_PASSWORD: password
+
+    ports:
+      - 127.0.0.1:5432:5432
+
+  redis:
+    image: redis:7-alpine
+
+    ports:
+      - 127.0.0.1:6379:6379
+
+  clickhouse:
+    image: clickhouse/clickhouse-server
+
+    ports:
+      - 127.0.0.1:8123:8123 # http proto
+      - 127.0.0.1:9000:9000 # native proto
