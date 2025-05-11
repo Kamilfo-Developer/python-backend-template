@@ -4,16 +4,22 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Self
 
-from dishka import make_async_container
+from dishka import AsyncContainer, make_async_container
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import AppConfig
 from app.dependencies.providers import app_provider
 from app.lib.exceptions.handler import register_exception_handlers
+from app.lib.utils.openapi import get_openapi
 from app.middlewares.idempotent_request import IdempotentRequestMiddleware
 from app.middlewares.request_id import RequestIdMiddleware
 from app.routers.v1.router import v1_router
+
+
+# This will block the calling thread until the coroutine is finished.
+# Any exception that occurs in the coroutine is raised in the caller
 
 
 class App:
@@ -29,10 +35,19 @@ class App:
         """
         self.config = config
         self.fastapi_app = app or FastAPI(lifespan=self.lifespan)
+        dishka_container = make_async_container(app_provider)
 
         self._setup_routes()
         self._setup_exception_handlers()
-        self._setup_middleware()
+        self._setup_middleware(dishka_container=dishka_container)
+        self.fastapi_app.openapi_schema = get_openapi(
+            title=self.fastapi_app.title,
+            description=self.fastapi_app.description,
+            version=self.fastapi_app.version,
+            routes=self.fastapi_app.routes,
+            exclude_tags=["internal", "debug"] if self.config.general.production else [],
+        )
+        setup_dishka(dishka_container, self.fastapi_app)
 
     def _setup_routes(self) -> None:
         """Setup API routes."""
@@ -42,16 +57,21 @@ class App:
         """Setup custom exception handlers."""
         register_exception_handlers(self.fastapi_app)
 
-    def _setup_middleware(self) -> None:
+    def _setup_middleware(self, dishka_container: AsyncContainer) -> None:
         """Setup application middleware."""
-        dishka_container = make_async_container(app_provider)
 
+        self.fastapi_app.add_middleware(
+            CORSMiddleware,
+            allow_origins=self.config.general.origins,
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
         self.fastapi_app.add_middleware(
             IdempotentRequestMiddleware,
             dependencies_getter=dishka_container.get,
         )
         self.fastapi_app.add_middleware(RequestIdMiddleware)
-        setup_dishka(dishka_container, self.fastapi_app)
 
     @classmethod
     def from_env(cls) -> Self:
