@@ -6,6 +6,7 @@ from typing import TypeVar
 from app.lib.enums.filter import OrderByType
 from app.lib.utils.specification import OrderBySpecification
 
+
 T = TypeVar("T")
 
 
@@ -20,9 +21,11 @@ def multisorted(list_to_sort: list[T], specifications: list[OrderBySpecification
         Iterable[T]: The sorted iterable.
 
     """
+    iterable = list_to_sort
+
     for specification in specifications:
         iterable = sorted(
-            list_to_sort,
+            iterable,
             key=attrgetter(specification.field),
             reverse=specification.type == OrderByType.DESC,
         )

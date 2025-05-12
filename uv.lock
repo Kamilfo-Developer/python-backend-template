@@ -869,6 +869,19 @@ wheels = [
 ]
 
 [[package]]
+name = "pyfa-converter-v2"
+version = "2.0.0rc1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/09/64/87694101871ce7b4a1bd77a7d0dbf6ef9a361945cfac78a6659d94faa9ce/pyfa_converter_v2-2.0.0rc1.tar.gz", hash = "sha256:d505466b29a90d6d7455b3efa77d77eaefa49dcd506670756685d15d5f439843", size = 6250 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/51/a3096c63725d652056c71f82d2fef2ab658b5bc9662cbe9362bb37c2d015/pyfa_converter_v2-2.0.0rc1-py3-none-any.whl", hash = "sha256:575469d88b3917ff3464b145ae437efb499cbc8dd105733f045846747661e561", size = 10988 },
+]
+
+[[package]]
 name = "pygments"
 version = "2.19.1"
 source = { registry = "https://pypi.org/simple" }
@@ -966,6 +979,7 @@ dependencies = [
     { name = "litestar" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "pyfa-converter-v2" },
     { name = "pyjwt" },
     { name = "redis" },
     { name = "sentry-sdk" },
@@ -994,6 +1008,7 @@ requires-dist = [
     { name = "litestar", specifier = ">=2.15.2" },
     { name = "pydantic", specifier = ">=2.11.4" },
     { name = "pydantic-settings", specifier = ">=2.9.1" },
+    { name = "pyfa-converter-v2", specifier = ">=2.0.0rc1" },
     { name = "pyjwt", specifier = ">=2.10.1" },
     { name = "redis", specifier = ">=6.0.0" },
     { name = "sentry-sdk", specifier = ">=2.27.0" },

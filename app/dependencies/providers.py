@@ -10,7 +10,9 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import AppConfig
-from app.dependencies.constructors import (
+from app.core.repositories.example import ExampleRepository
+from app.implementations.repositories.example import InMemoryExampleRepository
+from app.lib.dependencies.constructors import (
     clickhouse_client,
     db_engine,
     db_session_autocommit,
@@ -19,7 +21,9 @@ from app.dependencies.constructors import (
     redis_pool,
 )
 from app.lib.repositories.db_context import DBContext
+from app.lib.repositories.in_memory_db_context import InMemoryDBContext
 from app.lib.repositories.sa_db_context import SADBContext
+from app.services.example import ExampleService
 
 
 class AppProvider(FastapiProvider):
@@ -31,7 +35,7 @@ class AppProvider(FastapiProvider):
         """Get application configuration.
 
         Returns:
-            AppConfig: T    he application configuration.
+            AppConfig: The application configuration.
 
         """
         return AppConfig.from_env()
@@ -97,6 +101,26 @@ class AppProvider(FastapiProvider):
 
         """
         return await anext(redis_conn(await anext(redis_pool(app_config.redis.url, decode_responses=True))))
+
+    @provide(scope=Scope.APP)
+    async def new_example_repository(self) -> ExampleRepository:
+        """Get new example repository.
+
+        Returns:
+            ExampleRepository: The new instance of ExampleRepository.
+
+        """
+        return InMemoryExampleRepository(InMemoryDBContext())
+
+    @provide(scope=Scope.REQUEST)
+    async def new_example_service(self, example_repository: ExampleRepository) -> ExampleService:
+        """Get new example service.
+
+        Returns:
+            ExampleService: The new instance of ExampleService.
+
+        """
+        return ExampleService(example_repository=example_repository)
 
 
 app_provider = AppProvider()
