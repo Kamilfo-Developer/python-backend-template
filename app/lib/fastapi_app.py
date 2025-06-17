@@ -86,5 +86,3 @@ class FastAPIApp:
             yield
         finally:
             await app.state.dishka_container.close()
-            await app.state.dishka_container.close()
-            await app.state.dishka_container.close()
