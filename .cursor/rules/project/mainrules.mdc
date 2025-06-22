@@ -1,3 +1,8 @@
+---
+description: Doing everything
+globs: 
+alwaysApply: false
+---
 # Here are presented rules you should follow no matter what. If you don't follow these rules, you completely fail
 
 ## Write for every change you make either a unit-test or an intergation test
