@@ -16,6 +16,13 @@ class BaseSpecification(ABC):
     value: Any
 
     def __init__(self, field: str, value: Any) -> None:
+        """Initialize the specification object.
+
+        Args:
+            field (str): A field to use in is_satisfied_by.
+            value (Any): A value of the field to use in is_satisfied_by.
+
+        """
         self.field = field
         self.value = value
 

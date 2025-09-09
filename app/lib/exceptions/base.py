@@ -3,14 +3,12 @@
 from abc import ABCMeta
 from collections.abc import Sequence
 from logging import getLogger
-from typing import Any, Generic, TypedDict, TypeVar
+from typing import Any, TypedDict
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
 logger = getLogger(__name__)
-
-_Exception = TypeVar("_Exception", bound=Exception)
 
 
 class ExceptionConfigDict(TypedDict, total=False):
@@ -62,7 +60,7 @@ class AbstractException(ApiException, metaclass=ABCMeta):
     status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
     headers: dict[str, str] | None = None
     log_exception: bool = True
-    log_items: list[str] = []
+    log_items: list[str]
     log_instantly: bool = False
     is_public: bool = True
     additional_info: dict[str, Any] = {}
@@ -71,37 +69,39 @@ class AbstractException(ApiException, metaclass=ABCMeta):
 
     def __init__(
         self,
-        detail_: str | None = None,
-        status_code_: int | None = None,
+        detail: str | None = None,
+        status_code: int | None = None,
         *,
-        headers_: dict[str, str] | None = None,
-        log_exception_: bool | None = None,
-        request_id_: UUID | None = None,
-        is_public_: bool | None = None,
-        additional_info_: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        log_exception: bool | None = None,
+        request_id: UUID | None = None,
+        is_public: bool | None = None,
+        additional_info: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Exception init method.
 
         Args:
-            detail_ (str): Exception detail.
-            status_code_ (int): HTTP status_codes code.
-            headers_ (dict): Headers to be added to the response.
-            log_exception_ (bool): If True, then the exception is logged.
-            request_id_ (UUID): Request id.
-            is_public_ (bool): If True, then the exception is public.
-            additional_info_ (dict): Additional info to be added to the response.
+            detail (str): Exception detail.
+            status_code (int): HTTP status_codes code.
+            headers (dict): Headers to be added to the response.
+            log_exception (bool): If True, then the exception is logged.
+            request_id (UUID): Request id.
+            is_public (bool): If True, then the exception is public.
+            additional_info (dict): Additional info to be added to the response.
             **kwargs (Any): Additional kwargs to be added to the exception.
 
         """
+        self.additional_info = additional_info or self.additional_info or {}
+        self.auto_additional_info_fields = self.auto_additional_info_fields or []
         self._initialize_attributes(
-            detail_,
-            status_code_,
-            headers_,
-            log_exception_,
-            request_id_,
-            is_public_,
-            additional_info_,
+            detail=detail,
+            status_code=status_code,
+            headers=headers,
+            log_exception=log_exception,
+            request_id=request_id,
+            is_public=is_public,
+            additional_info=additional_info,
         )
         self._format_detail_from_kwargs(kwargs)
         self._add_additional_info_fields(kwargs)
@@ -113,22 +113,23 @@ class AbstractException(ApiException, metaclass=ABCMeta):
 
     def _initialize_attributes(
         self,
-        detail_: str | None,
-        status_code_: int | None,
-        headers_: dict[str, str] | None,
-        log_exception_: bool | None,
-        request_id_: UUID | None,
-        is_public_: bool | None,
-        additional_info_: dict[str, Any] | None,
+        detail: str | None,
+        status_code: int | None,
+        headers: dict[str, str] | None,
+        *,
+        log_exception: bool | None,
+        request_id: UUID | None,
+        is_public: bool | None,
+        additional_info: dict[str, Any] | None,
     ) -> None:
         """Initialize exception attributes with provided or default values."""
-        self.current_request_id = request_id_
-        self.current_detail = detail_ or self.detail
-        self.current_headers = headers_ or self.headers
-        self.current_status_code = status_code_ or self.status_code
-        self.current_log_exception = log_exception_ or self.log_exception
-        self.current_is_public = is_public_ or self.is_public
-        self.current_additional_info = additional_info_ or self.additional_info.copy()
+        self.current_request_id = request_id
+        self.current_detail = detail or self.detail
+        self.current_headers = (self.headers or {}) | (headers or {})
+        self.current_status_code = status_code or self.status_code
+        self.current_log_exception = log_exception or self.log_exception
+        self.current_is_public = is_public or self.is_public
+        self.current_additional_info = (self.additional_info or {}).copy() | (additional_info or {})
 
     def _format_detail_from_kwargs(self, kwargs: dict[str, Any]) -> None:
         """Format exception detail message using kwargs if applicable."""
@@ -160,7 +161,10 @@ class AbstractException(ApiException, metaclass=ABCMeta):
     def _initialize_parent(self) -> None:
         """Initialize parent class with appropriate message."""
         if self.current_detail:
-            super().__init__(status_code=self.current_status_code, detail=self.current_detail)
+            super().__init__(
+                status_code=self.current_status_code,
+                detail=self.current_detail,
+            )
         else:
             # If detail is not specified, use class name with status code
             super().__init__(
@@ -213,38 +217,6 @@ class AbstractException(ApiException, metaclass=ABCMeta):
         logger.exception(text, exc_info=self)
 
 
-class ExceptionExcInfo(AbstractException, Generic[_Exception]):
-    """Abstract exception with exception information."""
-
-    exception: _Exception | None = None
-    log_items = ["exception"]
-
-    def __init__(
-        self,
-        detail_: str,
-        status_code_: int | None = None,
-        exception: _Exception | None = None,
-        *,
-        headers_: dict[str, str] | None = None,
-        log_exception_: bool | None = None,
-        request_id_: UUID | None = None,
-        is_public_: bool | None = None,
-        additional_info_: dict[str, Any] | None = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            detail_,
-            status_code_,
-            exception=exception,
-            headers_=headers_,
-            log_exception_=log_exception_,
-            request_id_=request_id_,
-            is_public_=is_public_,
-            additional_info_=additional_info_,
-            **kwargs,
-        )
-
-
 # Define base exceptions for specific HTTP status_codes codes.
 # Usage: class MyDomainException(DomainException, NotFoundException): pass
 # Order is important here, please see the comment in AbstractException.__init__.
@@ -294,6 +266,12 @@ class UnprocessableEntityException(AbstractException):
     """422 Unprocessable Entity."""
 
     status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+class TooManyRequestsException(AbstractException):
+    """429 Too Many Requests."""
+
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
 
 
 class InternalServerErrorException(AbstractException):

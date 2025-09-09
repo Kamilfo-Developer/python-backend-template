@@ -1,96 +1,82 @@
 [project]
 name = "python-backend-template"
 version = "0.1.0"
-description = "Add your description here"
+description = "Python backend template for creating new projects"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
-    "aiochclient>=2.6.0",
-    "aiohttp>=3.11.18",
-    "alembic>=1.15.2",
-    "cbor2>=5.6.5",
-    "dishka>=1.5.3",
-    "fastapi>=0.115.12",
-    "hatchling>=1.27.0",
-    "jwt>=1.3.1",
-    "litestar>=2.15.2",
-    "pydantic>=2.11.4",
-    "pydantic-settings>=2.9.1",
-    "pyfa-converter-v2>=2.0.0rc1",
-    "pyjwt>=2.10.1",
-    "python-dotenv>=1.1.0",
-    "redis>=6.0.0",
-    "sentry-sdk>=2.27.0",
-    "sqlalchemy>=2.0.40",
-    "uvicorn>=0.34.2",
+    "aiogram>=3.21.0",
+    "aiohttp>=3.12.15",
+    "alembic>=1.16.4",
+    "asyncpg>=0.30.0",
+    "cryptography>=45.0.6",
+    "dishka>=1.6.0",
+    "fastapi>=0.116.1",
+    "fastapi-idempotent>=0.0.3",
+    "faststream[confluent]>=0.5.48",
+    "httpx>=0.28.1",
+    "opentelemetry-distro>=0.57b0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.36.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.36.0",
+    "opentelemetry-instrumentation>=0.57b0",
+    "opentelemetry-instrumentation-fastapi>=0.57b0",
+    "opentelemetry-instrumentation-httpx>=0.57b0",
+    "opentelemetry-instrumentation-logging>=0.57b0",
+    "pydantic-settings>=2.10.1",
+    "redis>=6.4.0",
+    "sentry-sdk>=2.35.0",
+    "sqlalchemy>=2.0.42",
+    "tenacity>=9.1.2",
+    "uvicorn>=0.35.0",
+    "uvloop>=0.21.0",
 ]
-
-
-[tool.mypy]
-ignore_missing_imports = true
-
-[tool.isort]
-line_length = 120
-atomic = true
-include_trailing_comma = true
-use_parentheses = true
-profile = "black"
-lines_before_imports = 1
-lines_after_imports = 2
-combine_as_imports = true
-multi_line_output = 3
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py313"
+line-length = 120
+
 # Disable fix for unused imports (`F401`).
 lint.unfixable = ["F401"]
-
-select = ["ALL"]
-line-length = 120
-ignore = [
-    "TRY003",
-    "EM101",
-    "D107",
-    "FBT001",
-    "A002",
-    "D204",
-    "D202",
-    "TC001",
-    "INP001",
-    "D401",
-    "N811",
-    "RUF012",
-    "B904",
-    "G004",
-    "PLR0913",
-    "ANN401",
-    "TRY004",
-    "S101",
-    "PLR2004",
-    "FBT002",
-    "FBT003",
-    "PT011",
-    "B024",
-    "EXE002",
-    "TC003",
-    "I001",
-    "TRY401",
-    "RUF001",
-    "BLE001",
+lint.select = ["ALL"]
+lint.ignore = [
+    "D203",    #incorrect-blank-line-before-class
+    "D213",    # multi-line-summary-second-line
+    "TRY003",  # raise-vanilla-args
+    "EM101",   # raw-string-in-exception
+    "D107",    # undocumented-public-init
+    "A002",    # builtin-argument-shadowing
+    "D202",    # blank-line-after-function
+    "D401",    # non-imperative-mood
+    "G004",    # logging-f-string
+    "ANN401",  # any-type
+    "S101",    # assert
+    "PT011",   # pytest-raises-too-broad
+    "B024",    # abstract-base-class-without-abstract-method
+    "EXE002",  # shebang-missing-executable-file
+    "RUF001",  # ambiguous-unicode-character-string
+    "BLE001",  # blind-except
+    "ARG001",  # unused-function-argument
+    "N818",    # error-suffix-on-exception-name
+    "PLR0913", # too-many-arguments
+    "TC001",   # typing-only-first-party-import
+    "RUF012",  # mutable-class-default
+    "COM812",  # missing-trailing-comma
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"migrations/*" = ["ALL"]
 
-[tool.setuptools]
-py-modules = []
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
+[tool.coverage.run]
+# We need *__dishka_factory* here to be excluded because it is a generated file by dishka.
+omit = ["*/lib/*", "*__dishka_factory*", "app.py", "dependencies.py", "tests/*"]
+concurrency = ["greenlet"]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.3.5",
-    "pytest-asyncio>=0.26.0",
-    "pytest-coverage>=0.0",
-    "types-pyyaml>=6.0.12.20250402",
+    "httpx>=0.28.1",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "pytest-cov>=6.2.1",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.12.9",
 ]

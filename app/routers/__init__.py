@@ -1,1 +1,1 @@
-"""Routers."""
+"""Application routers."""

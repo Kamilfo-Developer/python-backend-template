@@ -1,7 +1,3 @@
-"""Module containing all Application SQLAlchemy models."""
+"""Models."""
 
-from app.lib.models.base import AbstractModel
-
-__all__ = [
-    "AbstractModel",
-]
+__all__ = []

@@ -10,7 +10,6 @@ from typing import Any, ClassVar
 from pydantic import BaseModel
 from sqlalchemy.orm import DeclarativeBase
 
-
 T = t.TypeVar("T", bound="AbstractModel")
 
 
@@ -94,7 +93,7 @@ class AbstractModel(DeclarativeBase):
             A list of primary key column names
 
         """
-        return [i.name for i in cls.__table__.primary_key.columns.values()]  # type: ignore
+        return [i.name for i in cls.__table__.primary_key.columns.values()]  # type: ignore[attr-defined]
 
     def _get_key_value(self, name: str) -> Any:
         """Get the value of a specific attribute.

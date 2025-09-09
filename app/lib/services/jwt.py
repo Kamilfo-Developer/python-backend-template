@@ -5,15 +5,14 @@ including token generation, validation, and decoding.
 """
 
 from datetime import UTC, datetime, timedelta
-from typing import Any, Generic, TypeVar
+from typing import Any
 
-from jwt import decode as jwt_decode, encode as jwt_encode
+from jwt import decode as jwt_decode
+from jwt import encode as jwt_encode
+from pydantic import BaseModel
 
 
-T = TypeVar("T")
-
-
-class JWTService(Generic[T]):
+class JWTService:
     """JWT service for encoding and decoding JSON Web Tokens.
 
     This service handles the creation and validation of JWTs,
@@ -33,7 +32,7 @@ class JWTService(Generic[T]):
 
     def encode(
         self,
-        data: T,
+        data: BaseModel,
         expires_in: int | None = None,
         additional_claims: dict[str, Any] | None = None,
     ) -> str:
@@ -48,7 +47,7 @@ class JWTService(Generic[T]):
             The encoded JWT string
 
         """
-        payload: dict[str, Any] = {"sub": str(data)}
+        payload: dict[str, Any] = {"sub": data.model_dump_json()}
 
         if additional_claims:
             payload.update(additional_claims)
@@ -58,11 +57,13 @@ class JWTService(Generic[T]):
 
         return jwt_encode(payload, self._secret_key, algorithm=self._jwt_algorithm)
 
-    def decode(self, token: str) -> dict[str, Any]:
-        """Decode a JWT.
+    def decode[T: BaseModel](self, token: str, model: type[T], required_claims: list[str] | None = None) -> T:
+        """Decode a JWT and validate required claims.
 
         Args:
             token: The JWT string to decode
+            model: The model to decode the JWT into
+            required_claims: The required claims to validate
 
         Returns:
             The decoded JWT payload as a dictionary
@@ -72,4 +73,15 @@ class JWTService(Generic[T]):
             jwt.exceptions.ExpiredSignatureError: If the token has expired
 
         """
-        return jwt_decode(token, key=self._secret_key, algorithms=[self._jwt_algorithm])
+        payload = jwt_decode(
+            token,
+            key=self._secret_key,
+            algorithms=[self._jwt_algorithm],
+            options={
+                "require": required_claims,
+            },
+        )
+
+        return model.model_validate_json(
+            payload["sub"],
+        )

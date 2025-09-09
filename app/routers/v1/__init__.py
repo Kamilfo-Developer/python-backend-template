@@ -1,1 +1,1 @@
-"""V1 API router."""
+"""Application V1 routers."""
