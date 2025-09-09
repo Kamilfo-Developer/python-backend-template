@@ -1,7 +1,7 @@
 ---
 description: Doing everything
-globs: 
-alwaysApply: false
+globs:
+alwaysApply: true
 ---
 # Here are presented rules you should follow no matter what. If you don't follow these rules, you completely fail
 
@@ -15,63 +15,28 @@ alwaysApply: false
 
 - Includes the main app.py file and all the subdirectories
 - Inlcudes types.py file. It contains reusable types of the project
+- Includes dependencies.py file. It contains all dependencies, which can be provided using Dishka. All dependencies MUST be located in the AppProvider class of this file
 
-### app/cli
-
-- Includes all logic related to CLI
-
-### app/core
-
-- Includes all project domain logic and interfaces
-- Includes the config file
-
-### app/core/api_clients
-
-- Includes API Clients for making HTTP-requestss, calling Message Brokers queues, etc.
-
-### app/core/entities
-
-- Includes all entities with the business logic
-- Entities and DTOs ARE DIFFERENT
-- The business logic should be encapsulated in entities methods
-
-### app/core/enums
+### app/enums
 
 - Includes all the enums in the project. All enums should be inherited from BaseEnum from the app/lib/enums/base.py file
 
-### app/core/exceptions
+### app/exceptions
 
 - Includes all project exceptions
 - All base exceptions for each domain should be inherited from the AbstractException from app/lib/exceptions/base.py
 - All domain exceptions should be inherited from the base exception of a specific domain
 
-### app/core/queries
-
-- Includes interfaces for all project DB queries
-- DB queries and repositories ARE DIFFERENT
-- DB queries are the queries which can return DTOs or just do an action in the DB. For example, queries can be used for creating basic CRUD
-
-### app/core/repositories
+### app/repositories
 
 - Includes interfaces for all project DB repositories
-- DB queries and repositories ARE DIFFERENT
-- DB repositories can use entities only
+- DB repositories can use ONLY Pydantic models for input and output
 - Repositories use the Specification pattern located in the app/lib/utils/specification.py for the queries which can use filters. For example, get_users can accept a Specification object.
 
-### app/dependencies
-
-- Includes all dependencies logic
-- Dependency Injection is implemented using the Dishka framework
-- All dependencies MUST be located in the AppProvider class of the app/dependencies/providers.py file
-
-### app/implementations
-
-- Includes all the implementations of the interfaces delcared in app/core folders
-  
 ### app/lib
 
 - Includes utils
-- This folder can be reused across project so, if you edit it, keep it clean and providing as much documentation as possible
+- This folder can be reused across project. NEVER EDIT ANY FILE INSIDE IT!
 
 ### app/models
 
@@ -79,12 +44,12 @@ alwaysApply: false
 
 ### app/routers
 
-- Includes all framework routes of the application. For example, it can include routes for FastAPI or aiogram.
+- Includes all framework routes of the application. For example, it can include routes for FastAPI, Aiogram or FastStream.
 - All routes for web-framework like FastAPI should be located in special version folder, e.g. v1, v2, etc.
 
 ### app/schemas
 
-- Includes all schemas of the applicatoin. For example, Pydantic schemas
+- Includes all Pydantic schemas of the applicatoin. All entities should be defined here
 
 ### app/services
 
