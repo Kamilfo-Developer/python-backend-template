@@ -28,8 +28,8 @@ async def create_app(
     setup_dishka_faststream(container, broker=mq_router.broker, finalize_container=False)
 
     app = FastAPI(
-        title="Reel-o-Matic Workspace API",
-        description="Reel-o-Matic Workspace API.",
+        title="Python-backend-template API",
+        description="Python-backend-template API.",
         version=__version__,
     )
 
