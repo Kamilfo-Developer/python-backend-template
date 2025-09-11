@@ -4,6 +4,7 @@ from collections.abc import Awaitable, Callable
 
 from dishka import AsyncContainer, Scope
 from dishka.integrations.fastapi import setup_dishka as setup_dishka_fastapi
+from dishka.integrations.faststream import setup_dishka as setup_dishka_faststream
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
@@ -14,6 +15,7 @@ from app.lib.middlewares.idempotency import (
     IdempotencyKeysStorage,
     idempotency_middleware,
 )
+from app.routers.queues.router import mq_router
 from app.routers.router import router
 from app.version import __version__
 
@@ -23,9 +25,11 @@ async def create_app(
 ) -> FastAPI:
     """Create the FastAPI application."""
 
+    setup_dishka_faststream(container, broker=mq_router.broker, finalize_container=False)
+
     app = FastAPI(
-        title="AutoPosting",
-        description="AutoPosting API.",
+        title="Reel-o-Matic Workspace API",
+        description="Reel-o-Matic Workspace API.",
         version=__version__,
     )
 

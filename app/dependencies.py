@@ -8,14 +8,14 @@ from dishka.integrations.aiogram import AiogramProvider
 from dishka.integrations.fastapi import FastapiProvider
 from dishka.integrations.faststream import FastStreamProvider
 from dishka.provider import provide
-from redis.asyncio import Redis
 
 from app.config import AppConfig
+from app.lib.config.idempotency import IdempotencyConfig
+from app.lib.config.redis import RedisConfig
+from app.lib.config.sqlalchemy import SQLAlchemyConfig
 from app.lib.dependencies.idempotency import IdempotencyProvider
 from app.lib.dependencies.redis import RedisProvider
 from app.lib.dependencies.sqlalchemy import SAProvider
-from app.lib.middlewares.idempotency import IdempotencyKeysStorage
-from app.lib.services.encryption import EncryptionService
 
 
 class AppProvider(FastapiProvider, AiogramProvider, FastStreamProvider):
@@ -32,6 +32,21 @@ class AppProvider(FastapiProvider, AiogramProvider, FastStreamProvider):
         return AppConfig.from_env()
 
     @provide(scope=Scope.APP)
+    async def idempotency_config(self, app_config: AppConfig) -> IdempotencyConfig:
+        """Get idempotency config."""
+        return app_config.idempotency
+
+    @provide(scope=Scope.APP)
+    async def sqlalchemy_config(self, app_config: AppConfig) -> SQLAlchemyConfig:
+        """Get sqlalchemy config."""
+        return app_config.database
+
+    @provide(scope=Scope.APP)
+    async def redis_config(self, app_config: AppConfig) -> RedisConfig:
+        """Get redis config."""
+        return app_config.redis
+
+    @provide(scope=Scope.APP)
     async def client(self) -> AsyncGenerator[httpx.AsyncClient]:
         """Get client.
 
@@ -41,16 +56,6 @@ class AppProvider(FastapiProvider, AiogramProvider, FastStreamProvider):
         """
         async with httpx.AsyncClient() as client:
             yield client
-
-    @provide(scope=Scope.REQUEST)
-    async def encryption_service(self, app_config: AppConfig) -> EncryptionService:
-        """Get encryption service."""
-        return EncryptionService(app_config.secrets.encryption_key.get_secret_value())
-
-    @provide(scope=Scope.REQUEST)
-    async def idempotency_keys_storage(self, redis: Redis, app_config: AppConfig) -> IdempotencyKeysStorage:
-        """Get idempotency keys storage."""
-        return IdempotencyKeysStorage(redis, app_config.idempotency.ttl)
 
 
 def create_container() -> AsyncContainer:
