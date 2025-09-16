@@ -14,12 +14,14 @@ from httpx import ASGITransport, AsyncClient
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from app.app import create_app
 from app.dependencies import AppProvider
+from app.lib.app import AppBuilder
 from app.lib.dependencies.redis import RedisProvider
 from app.lib.dependencies.sqlalchemy import SAProvider
 from app.lib.models.base import AbstractModel
 from app.routers.queues.router import get_broker
+from app.routers.router import router
+from app.version import __version__
 
 
 class MockAppProvider(AppProvider):
@@ -58,7 +60,20 @@ async def clean_redis(container: AsyncContainer) -> None:
 @pytest_asyncio.fixture()
 async def app(container: AsyncContainer) -> AsyncGenerator[FastAPI]:
     """Create FastAPI app for testing without bot polling."""
-    app = await create_app(container)
+    builder = AppBuilder(
+        container,
+        FastAPI(
+            title="Python Backend Template",
+            description="Python Backend Template.",
+            version=__version__,
+        ),
+    )
+    await builder.setup_faststream(get_broker())
+    await builder.setup_idempotency_middleware()
+    await builder.setup_exception_handlers(should_observe_exceptions=False)
+    await builder.setup_cors_middleware()
+    await builder.setup_router(router=router)
+    app = await builder.get_app()
 
     yield app
 

@@ -10,8 +10,6 @@ from typing import Any, ClassVar
 from pydantic import BaseModel
 from sqlalchemy.orm import DeclarativeBase
 
-T = t.TypeVar("T", bound="AbstractModel")
-
 
 class AbstractModel(DeclarativeBase):
     """Base abstract model for database entities.

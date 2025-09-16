@@ -2,21 +2,39 @@
 
 import asyncio
 
-from app.app import create_app, create_server
-from app.dependencies import AppConfig, create_container
-from app.lib.observability.fastapi import setup_observability_for_fastapi
+import uvloop
+from fastapi import FastAPI
+
+from app.dependencies import create_container
+from app.lib.app import AppBuilder
+from app.routers.queues.router import mq_router
+from app.routers.router import router
+from app.version import __version__
 
 
 async def main() -> None:
     """Main entry point for the application."""
     container = create_container()
-    app = await create_app(container)
+    builder = AppBuilder(
+        container,
+        FastAPI(
+            title="Python Backend Template",
+            description="Python Backend Template.",
+            version=__version__,
+        ),
+    )
 
-    setup_observability_for_fastapi(app, config=(await container.get(AppConfig)).observability)
+    await builder.setup_faststream(mq_router.broker)
+    await builder.setup_idempotency_middleware()
+    await builder.setup_exception_handlers()
+    await builder.setup_cors_middleware()
+    await builder.setup_router(router)
+    await builder.setup_observability()
 
-    server = await create_server(container, app)
+    server = await builder.get_server()
     await server.serve()
 
 
 if __name__ == "__main__":
+    uvloop.install()
     asyncio.run(main())
