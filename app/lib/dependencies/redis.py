@@ -5,24 +5,24 @@ from collections.abc import AsyncGenerator
 from dishka import Provider, Scope, provide
 from redis.asyncio import ConnectionPool, Redis
 
-from app.config import AppConfig
+from app.lib.config.redis import RedisConfig
 
 
 class RedisProvider(Provider):
     """Redis provider."""
 
     @provide(scope=Scope.APP)
-    def redis_pool(self, app_config: AppConfig) -> ConnectionPool:
+    def redis_pool(self, redis_config: RedisConfig) -> ConnectionPool:
         """Get redis pool.
 
         Args:
-            app_config (AppConfig): The application configuration.
+            redis_config (RedisConfig): The redis configuration.
 
         Returns:
             ConnectionPool: The redis pool.
 
         """
-        return ConnectionPool.from_url(str(app_config.redis.url))
+        return ConnectionPool.from_url(str(redis_config.url))
 
     @provide(scope=Scope.REQUEST)
     async def redis(self, redis_pool: ConnectionPool) -> AsyncGenerator[Redis]:

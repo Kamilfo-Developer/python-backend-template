@@ -7,16 +7,16 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.config import AppConfig
+from app.lib.config.sqlalchemy import SQLAlchemyConfig
 
 
 class SAProvider(Provider):
     """SQLAlchemy provider."""
 
     @provide(scope=Scope.APP)
-    async def db_engine(self, app_config: AppConfig) -> AsyncEngine:
+    async def db_engine(self, sqlalchemy_config: SQLAlchemyConfig) -> AsyncEngine:
         """Get db engine."""
-        return create_async_engine(app_config.database.url)
+        return create_async_engine(sqlalchemy_config.url)
 
     @provide(scope=Scope.APP)
     # Type ignore is needed because sessionmaker[AsyncSession] is not a subtype of sessionmaker[Session].
