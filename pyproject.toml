@@ -14,6 +14,7 @@ dependencies = [
     "fastapi>=0.116.1",
     "fastapi-idempotent>=0.0.3",
     "faststream[confluent]>=0.5.48",
+    "haolib",
     "httpx>=0.28.1",
     "opentelemetry-distro>=0.57b0",
     "opentelemetry-exporter-otlp-proto-grpc>=1.36.0",
@@ -63,6 +64,7 @@ lint.ignore = [
     "TC001",   # typing-only-first-party-import
     "RUF012",  # mutable-class-default
     "COM812",  # missing-trailing-comma
+    "TC002",   #typing-only-third-party-import
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -72,6 +74,9 @@ lint.ignore = [
 # We need *__dishka_factory* here to be excluded because it is a generated file by dishka.
 omit = ["*/lib/*", "*__dishka_factory*", "app.py", "dependencies.py", "tests/*"]
 concurrency = ["greenlet"]
+
+[tool.uv.sources]
+haolib = { git = "https://github.com/hao-vc/haolib" }
 
 [dependency-groups]
 dev = [

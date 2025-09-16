@@ -1,5 +1,5 @@
 """Models."""
 
-from app.lib.models.base import AbstractModel
+from haolib.models.base import AbstractModel
 
 __all__ = ["AbstractModel"]

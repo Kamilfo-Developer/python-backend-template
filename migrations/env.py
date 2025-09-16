@@ -10,7 +10,7 @@ from sqlalchemy import engine_from_config, pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from app.lib.models.base import AbstractModel
+from haolib.models.base import AbstractModel
 
 # We set noqa here since we need all models
 from app.models import *  # noqa: F403

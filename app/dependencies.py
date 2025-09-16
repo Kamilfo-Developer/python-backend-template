@@ -8,14 +8,14 @@ from dishka.integrations.aiogram import AiogramProvider
 from dishka.integrations.fastapi import FastapiProvider
 from dishka.integrations.faststream import FastStreamProvider
 from dishka.provider import provide
+from haolib.configs.idempotency import IdempotencyConfig
+from haolib.configs.redis import RedisConfig
+from haolib.configs.sqlalchemy import SQLAlchemyConfig
+from haolib.dependencies.idempotency import IdempotencyProvider
+from haolib.dependencies.redis import RedisProvider
+from haolib.dependencies.sqlalchemy import SQLAlchemyProvider
 
 from app.config import AppConfig
-from app.lib.config.idempotency import IdempotencyConfig
-from app.lib.config.redis import RedisConfig
-from app.lib.config.sqlalchemy import SQLAlchemyConfig
-from app.lib.dependencies.idempotency import IdempotencyProvider
-from app.lib.dependencies.redis import RedisProvider
-from app.lib.dependencies.sqlalchemy import SAProvider
 
 
 class AppProvider(FastapiProvider, AiogramProvider, FastStreamProvider):
@@ -60,4 +60,4 @@ class AppProvider(FastapiProvider, AiogramProvider, FastStreamProvider):
 
 def create_container() -> AsyncContainer:
     """Create a container."""
-    return make_async_container(SAProvider(), RedisProvider(), AppProvider(), IdempotencyProvider())
+    return make_async_container(SQLAlchemyProvider(), RedisProvider(), AppProvider(), IdempotencyProvider())

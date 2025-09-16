@@ -2,8 +2,7 @@
 
 from faststream.confluent import KafkaBroker
 from faststream.confluent.fastapi import KafkaRouter
-
-from app.lib.middlewares.faststream_opentelemetry import get_kafka_telemetry_middleware
+from haolib.middlewares.faststream_opentelemetry import get_kafka_telemetry_middleware
 
 mq_router = KafkaRouter(middlewares=(get_kafka_telemetry_middleware(),))
 
