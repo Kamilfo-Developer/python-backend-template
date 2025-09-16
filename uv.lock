@@ -649,7 +649,7 @@ wheels = [
 [[package]]
 name = "haolib"
 version = "0.1.0"
-source = { git = "https://github.com/hao-vc/haolib#9db4a0e0bf2b06b55d4f2373590a1f8e307c251c" }
+source = { git = "https://github.com/hao-vc/haolib#35da7beea4756facced69136727eca217d4c25d8" }
 dependencies = [
     { name = "aiogram" },
     { name = "aiohttp" },
@@ -658,7 +658,6 @@ dependencies = [
     { name = "bcrypt" },
     { name = "cryptography" },
     { name = "dishka" },
-    { name = "fastapi" },
     { name = "fastapi-idempotent" },
     { name = "faststream", extra = ["confluent"] },
     { name = "httpx" },

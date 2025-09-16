@@ -30,6 +30,7 @@ async def main() -> None:
         app,
     )
 
+    await builder.setup_dishka()
     await builder.setup_faststream(mq_router.broker)
     await builder.setup_idempotency_middleware()
     await builder.setup_exception_handlers()
